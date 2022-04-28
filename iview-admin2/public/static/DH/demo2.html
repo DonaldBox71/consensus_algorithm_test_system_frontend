@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>大华-WebSock拉流</title>
+</head>
+<style>
+
+</style>
+<body>
+
+<canvas id="livecanvas" class="kind-stream-canvas" kind-channel-id="0"
+        style="border: 3px solid white; width: 800px; height: 600px; top: 0px; left: 466px;" width="1920"
+        height="1080"></canvas>
+<canvas id="ivscanvas" class="kind-stream-canvas"
+        style="border: 3px solid white; width: 800px; height: 600px; left: 5px; position: absolute" width="1920"
+        height="1080"></canvas>
+<video id="liveVideo" class="kind-stream-canvas" kind-channel-id="0" muted
+       style="border: 3px solid white; width: 800px; height: 600px; top: 0px; left: 466px;display:none" width="1920"
+       height="1080"></video>
+<div>
+    <span>服务器IP：</span>
+    <input id="serverAdress" placeholder="172.3.110.80" type="text" value="10.35.80.17">
+</div>
+<div>
+    <span>设备通道编码：</span>
+    <input id="channelCode" placeholder="" type="text" value="">
+</div>
+<div>
+    <span>accessToken：</span>
+    <input id="accessToken" type="text" value="">
+</div>
+<div>
+    <span>拉流类型</span>
+    <label><input type="radio" name="videoType" value="9100" checked=true>实时视频</label>
+    <label><input type="radio" name="videoType" value="9320">录像回放</label>
+    <input type="button" id="getRtsp" value="获取RTSP地址">
+</div>
+
+
+<div>
+    <span>RTSP地址：</span>
+    <input style="width: 600px;" id="rtspAdress" type="text" readonly>
+</div>
+
+
+<div style="margin-top:20px">
+    <input type="button" id="play2" value="开始拉流">
+    <input type="button" id="end" value="结束拉流">
+    <input type="button" id="pause" value="暂停拉流">
+    <input type="button" id="start" value="继续拉流">
+    <input type="button" id="close" value="关闭">
+    <!-- <input type="button" id="fastPlay" value="快进"> -->
+    <input type="text" id="volumn" value="1">
+    <input type="button" id="controlVolumn" value="控制音量(0-1)">
+    <input type="button" id="capture" value="抓图">
+</div>
+<!--
+<div style="margin-top:20px">
+	<span>当前播放秒数</span>
+	<span id="currentTime">--</span>
+	
+	<input id="goTime" placeholder="跳转到几秒播放">
+	<input type="button" id="go" value="GO">
+</div> -->
+<script src="./module/PlayerControl.js"></script>
+<script src="./module/audioWorker.worker.js"></script>
+<script src="./module/ffmpegasm.js"></script>
+<script src="./lib/jquery-2.1.1.min.js"></script>
+
+</body>
+
+<script>
+    /*
+    * 本文件仅供demo使用
+    */
+    var player = null;
+    var PlayerControl = window.PlayerControl;
+    var wsPort = '9100';
+    var wssPort = '9102'
+    var oneDayToken = ''
+    $("#accessToken").val(localStorage.getItem('accessToken'))
+    $("#serverAdress").val(window.location.host.split(':')[0])
+    function play(url) {
+        if (player) {
+            player.close();
+        }
+        var serverAdress = document.getElementById('serverAdress').value;
+        var can = document.getElementById('livecanvas');
+        var videoElem = document.getElementById('liveVideo');
+        var canvasElem = document.getElementById('livecanvas');
+        var rtspAdress = document.getElementById('rtspAdress').value;
+        var videoType = document.getElementsByName('videoType');
+        if(location.protocol == 'https:'){
+            if (videoType[0].checked) {
+                wsPort = '9102'
+            } else if (videoType[1]) {
+                wsPort = '9322'
+            }
+        }else {
+            if (videoType[0].checked) {
+                wsPort = '9100'
+            } else if (videoType[1]) {
+                wsPort = '9320'
+            }
+        }
+        // var sub = document.getElementById('sub').value - 0;
+        var firstTime = 0;
+        //inputUrl = "rtsp://172.29.3.97:554//mnt/sd/2019-01-16/001/dav/19/19.55.00-19.58.13[R][0@0][0].dav"
+        //var rtspURL = url ? 'rtsp://'+ (ip || testIp) +':554/' + inputUrl : 'rtsp://'+ (ip || testIp) +':554/cam/realmonitor?channel=1&subtype='+ sub +'&proto=Private3'
+        var options = {
+            wsURL: 'ws://' + serverAdress + ':' + wsPort,
+            rtspURL: rtspAdress,
+        };
+
+        if(location.protocol == 'https:'){
+            options = {
+                wsURL: 'wss://' + serverAdress + ':' + wssPort,
+                rtspURL: rtspAdress,
+            };
+        }else {
+            options = {
+                wsURL: 'ws://' + serverAdress + ':' + wsPort,
+                rtspURL: rtspAdress,
+            };
+        }
+
+        player = new PlayerControl(options);
+
+        player.on('ResolutionChanged', function (e) {
+            console.log(e)
+        });
+        player.on('PlayStart', function (e) {
+            console.log(e)
+        });
+        player.on('DecodeStart', function (e) {
+            if (e.decodeMode === 'video') {
+                videoElem.style.display = '';
+                canvasElem.style.display = 'none';
+            } else {
+                videoElem.style.display = 'none';
+                canvasElem.style.display = '';
+            }
+        });
+        player.on('UpdateCanvas', function (e) {
+            if (firstTime === 0) {
+                firstTime = e.timestamp;//获取录像文件的第一帧的时间戳
+            }
+            //currentTime.innerText = e.timestamp - firstTime;
+            //debug.log('UpdateCanvas: ' + JSON.stringify(e))
+        });
+        player.on('GetFrameRate', function (e) {
+            console.log('GetFrameRate: ' + e)
+        });
+        player.on('FrameTypeChange', function (e) {
+            console.log('FrameTypeChange: ' + e)
+        });
+        player.on('Error', function (e) {
+            console.log('Error: ' + JSON.stringify(e))
+        });
+        player.on('IvsDraw', function (e) {
+            //console.log('IvsDraw: ' + JSON.stringify(e))
+        });
+        player.on('WorkerReady', function () {
+            player.connect();
+        })
+
+        player.init(can, videoElem);
+
+
+    }
+
+    document.getElementById('getRtsp').addEventListener('click', function () {
+        var channelCode =  $("#channelCode").val()
+        var param1 = {
+            "clientType": "WINPC",
+            "clientMac": "30:9c:23:79:40:08",
+            "clientPushId": "",
+            "project": "",
+            "method": "MTS.Video.StartVideo",
+            "data": {
+                "optional": "/evo-apigw/admin/API/MTS/Video/StartVideo",
+                "dataType": "1",
+                "streamType": "1",
+                "recordSource": "3",
+                "channelId": channelCode,
+                "trackId": ""
+            }
+        }
+        var param2 = {
+            "clientType": "WINPC",
+            "clientMac": "30:9c:23:79:40:08",
+            "clientPushId": "",
+            "project": "PSDK",
+            "method": "SS.Playback.StartPlaybackByTime",
+            "data": {
+                "nvrId": "",
+                "optional": "/evo-apigw/admin/API/SS/Playback/StartPlaybackByTime",
+                "recordType": "1",
+                "streamType": "1",
+                "recordSource": "3",
+                "channelId": channelCode,
+                "endTime": "1622563199",
+                "startTime": "1622476800"
+            }
+        }
+        var videoType = document.getElementsByName('videoType');
+        var accessToken = localStorage.getItem('accessToken');
+        $("#accessToken").val(accessToken)
+        var server = document.getElementById('serverAdress').value;
+
+        if (!server) {
+            alert("请输入服务器IP")
+            return
+        }
+        if (!accessToken) {
+            alert("请输入accessToken")
+            return
+        }
+        if(!channelCode){
+            alert("请输入设备通道编码")
+            return
+        }
+        var url1 =  '/evo-apigw/admin/API/MTS/Video/StartVideo';
+        var url2 =  '/evo-apigw/admin/API/SS/Playback/newStartPlaybackByTime';
+        var url = url1;
+        var param = param1;
+        if (videoType[0].checked) {
+            url = url1;
+            param = param1;
+        } else if (videoType[1].checked) {
+            url = url2;
+            param = param2;
+        }
+
+        $.ajax({
+            type: 'post',
+            dataType: 'json',
+            data: JSON.stringify(param),
+            headers: {Authorization: "bearer " + accessToken, 'User-Id': 1, 'Content-Type': 'application/json'},
+            contentType: 'application/json;charset=utf-8',
+            url: url,
+            crossDomain: true,
+            success: function (res) {
+                if (res.code == 1000) {
+                    $("#rtspAdress").val(res.data.url + '?token=' + res.data.token)
+                } else {
+                    alert(res.errMsg)
+                }
+            }
+        })
+
+    })
+    //document.getElementById('play').addEventListener('click',play);
+    document.getElementById('play2').addEventListener('click', play.bind(true));
+    document.getElementById('end').addEventListener('click', function () {
+        player && player.stop();
+    });
+    document.getElementById('pause').addEventListener('click', function () {
+        player && player.pause();
+    });
+    document.getElementById('close').addEventListener('click', function () {
+        player && player.close();
+    });
+    document.getElementById('controlVolumn').addEventListener('click', function () {
+        var vol = document.getElementById('volumn').value - 0;
+        player && player.setAudioVolume(vol);
+    });
+    document.getElementById('start').addEventListener('click', function () {
+        player && player.play();
+    });
+
+    /*document.getElementById('fastPlay').addEventListener('click', function() {
+        player && player.playFF(0.5);
+    });*/
+
+    document.getElementById('capture').addEventListener('click', function () {
+        player && player.capture('test');
+    });
+    /*
+    document.getElementById('go').addEventListener('click', function () {
+        var currentTime = document.getElementById('goTime').value - 0;
+        player && player.playByTime(currentTime);
+    });*/
+
+</script>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<script src="module/PlayerControl.js"></script>
+<script src="module/audioWorker.worker.js"></script>
+<script src="module/ffmpegasm.js"></script>
+<script src="./lib/jquery-2.1.1.min.js"></script>
+
+<body>
+<canvas id="livecanvas" class="kind-stream-canvas" kind-channel-id="0" style="border: 3px solid white; width: 800px; height: 600px; top: 0px; left: 466px;" width="1920" height="1080"></canvas>
+<canvas id="ivscanvas" class="kind-stream-canvas" style="border: 3px solid white; width: 800px; height: 600px; left: 5px; position: absolute" width="1920" height="1080"></canvas>
+<video id="liveVideo" class="kind-stream-canvas" kind-channel-id="0" style="border: 3px solid white; width: 800px; height: 600px; top: 0px; left: 466px;display:none" width="1920" height="1080"></video>
+
+
+
+<div style="margin-top:20px">
+	<span style="color:red">服务地址：</span>
+	<input id="serverAdress" placeholder="172.3.110.80" type="text">
+</div>
+<div>
+    <span>拉流类型</span>
+    <label><input type="radio" name="videoType" value="9100" checked=true>实时视频</label>
+    <label><input type="radio" name="videoType" value="9320">录像回放</label>
+</div>
+
+<div style="margin-top:20px">
+-------------------------实时拉流-----------------------------------------
+</div>
+
+<div style="margin-top:20px">
+
+	实时拉流
+</div>
+
+<div>
+	<span>拉流地址：</span>
+	<input style="width: 600px;" id="rtspAdress" placeholder="rtsp://172.3.110.80:9100/dss/monitor/param/cameraid=1010031%240%26substream=2" type="text">
+</div>
+
+
+<input type="button" id="play2" value="开始拉流">
+
+</div>
+
+
+
+
+<div style="margin-top:20px">
+-------------------------录像回放-----------------------------------------
+</div>
+
+<div style="margin-top:20px">
+	录像回放
+</div>
+
+
+<div>
+	<span>回放地址：</span>
+	<input style="width: 600px;" id="playbackAddr" placeholder="rtsp://10.35.80.17:9320/playback/center/37?token=36" type="text">
+	
+</div>
+
+<input type="button" id="playback" value="开始回放">
+<!-- 快进暂未提供demo，根据下面示例可以自己做改进 -->
+<!-- <input type="button" id="fastPlay" value="快进"> -->
+
+<div style="margin-top:20px">
+-------------------------公共按钮-----------------------------------------
+</div>
+
+<div style="margin-top:20px">
+	<input type="button" id="end" value="结束拉流">
+	<input type="button" id="pause" value="暂停拉流">
+	<input type="button" id="start" value="继续拉流">
+	<input type="button" id="close" value="关闭">
+	<!-- <input type="button" id="fastPlay" value="快进"> -->
+	<input type="text" id="volumn" value="1">
+	<!-- <input type="button" id="controlVolumn" value="控制音量(0-1)"> -->
+	<input type="button" id="capture" value="抓图">
+</div>
+<!--<div style="margin-top:20px">
+	<span>当前播放秒数</span>
+	<span id="currentTime">--</span>
+	
+	<input id="goTime" placeholder="跳转到几秒播放">
+	<input type="button" id="go" value="GO">
+</div>-->
+</body>
+
+
+<script>
+/*
+* 本文件仅供demo使用
+*/
+var player = null;
+var PlayerControl = window.PlayerControl;
+
+function play(url) {
+    if(player){
+        player.close();
+    }
+	//实时拉流ws端口
+	var wsPort = '9100';
+	//实时拉流wss端口,暂时不支持
+    var wssPort = '9102'
+	//录像回放ws端口
+	var playbackWsPort="9320"
+	//录像回放wss端口,暂时不支持
+	var playbackWssPort="9322"
+
+	
+    var can = document.getElementById('livecanvas');
+    var videoElem = document.getElementById('liveVideo');
+    var canvasElem = document.getElementById('livecanvas');
+//    var ws = new WebsocketServer('ws://172.23.2.100:554', "rtsp://172.23.2.100:554");
+//    ws.connect(can);
+    // var ip = document.getElementById('ip').value;
+    // var testIp = "172.29.3.97";
+    // var username = document.getElementById('username').value;
+    // var password = document.getElementById('password').value;
+    // var inputUrl = document.getElementById('url').value;
+
+    var serverAdress=document.getElementById('serverAdress').value;
+    var rtspAdress=document.getElementById('rtspAdress').value;
+	var playbackAddr=document.getElementById('playbackAddr').value;
+
+
+    // var sub = document.getElementById('sub').value - 0;
+    var firstTime = 0;
+	var videoType = document.getElementsByName('videoType');
+
+	
+	
+    //inputUrl = "rtsp://172.29.3.97:554//mnt/sd/2019-01-16/001/dav/19/19.55.00-19.58.13[R][0@0][0].dav"
+    //var rtspURL = url ? 'rtsp://'+ (ip || testIp) +':554/' + inputUrl : 'rtsp://'+ (ip || testIp) +':554/cam/realmonitor?channel=1&subtype='+ sub +'&proto=Private3'
+   
+	if (videoType[0].checked) {
+		wsPort = '9100'
+		rtspAdress=rtspAdress;
+	} else if (videoType[1]) {
+		wsPort = '9320'
+		rtspAdress=playbackAddr;
+	}
+    
+	var options = {
+		wsURL: 'ws://'+ serverAdress +':'+wsPort,
+		//wsURL: 'ws://172.29.2.201:554',
+		rtspURL: rtspAdress,
+	};
+
+
+    player = new PlayerControl(options);
+
+    player.on('ResolutionChanged', function (e) {
+        console.log(e)
+    });
+    player.on('PlayStart', function (e) {
+        console.log(e)
+    });
+    player.on('DecodeStart', function (e) {
+        if(e.decodeMode === 'video'){
+            videoElem.style.display = '';
+            canvasElem.style.display = 'none';
+        }else{
+            videoElem.style.display = 'none';
+            canvasElem.style.display = '';
+        }
+    });
+    player.on('UpdateCanvas', function (e) {
+        if(firstTime === 0){
+            firstTime = e.timestamp;//获取录像文件的第一帧的时间戳
+        }
+        //currentTime.innerText = e.timestamp - firstTime;
+        //debug.log('UpdateCanvas: ' + JSON.stringify(e))
+    });
+    player.on('GetFrameRate', function (e) {
+        console.log('GetFrameRate: ' + e)
+    });
+    player.on('FrameTypeChange', function (e) {
+        console.log('FrameTypeChange: ' + e)
+    });
+    player.on('Error', function (e) {
+        console.log('Error: ' + JSON.stringify(e))
+    });
+    player.on('IvsDraw', function (e) {
+        //console.log('IvsDraw: ' + JSON.stringify(e))
+    });
+    player.on('WorkerReady',function(){
+        player.connect(); 	
+    })
+
+    player.init(can, videoElem);
+
+    
+}
+
+document.getElementById('playback').addEventListener('click',play.bind(true));
+
+
+
+//document.getElementById('play').addEventListener('click',play);
+document.getElementById('play2').addEventListener('click',play.bind(true));
+document.getElementById('end').addEventListener('click', function () {
+    player && player.stop();
+});
+document.getElementById('pause').addEventListener('click', function () {
+    player && player.pause();
+});
+document.getElementById('close').addEventListener('click', function () {
+    player && player.close();
+});
+document.getElementById('controlVolumn').addEventListener('click', function () {
+    var vol = document.getElementById('volumn').value - 0;
+    player && player.setAudioVolume(vol);
+});
+document.getElementById('start').addEventListener('click', function () {
+    player && player.play();
+});
+
+document.getElementById('fastPlay').addEventListener('click', function() {
+    player && player.playFF(1);
+});
+document.getElementById('capture').addEventListener('click', function () {
+    player && player.capture('test');
+});
+
+document.getElementById('go').addEventListener('click', function () {
+    var currentTime = document.getElementById('goTime').value - 0;
+    player && player.playByTime(currentTime);
+});
+
+</script>
+</html>

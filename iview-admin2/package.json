@@ -1,0 +1,111 @@
+{
+  "name": "iview-admin",
+  "version": "2.0.0",
+  "author": "Lison<lison16new@163.com>",
+  "private": false,
+  "scripts": {
+    "dev": "vue-cli-service serve --open --port=81",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "test:unit": "vue-cli-service test:unit",
+    "test:e2e": "vue-cli-service test:e2e"
+  },
+  "dependencies": {
+    "@moohng/postcss-px2vw": "^1.1.0",
+    "axios": "^0.18.1",
+    "clipboard": "^2.0.0",
+    "codemirror": "^5.38.0",
+    "countup": "^1.8.2",
+    "cropperjs": "^1.2.2",
+    "crypto-js": "^4.0.0",
+    "dayjs": "^1.7.7",
+    "echarts": "^5.0.0",
+    "element-ui": "^2.15.3",
+    "eslint": "^5.16.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-node": "^7.0.0",
+    "eslint-plugin-promise": "^4.0.0",
+    "eslint-plugin-standard": "^4.0.0",
+    "eslint-plugin-vue": "^7.19.1",
+    "html2canvas": "^1.0.0-alpha.12",
+    "iview": "^3.5.4",
+    "iview-area": "^1.5.17",
+    "js-cookie": "^2.2.0",
+    "loader-utils": "^2.0.0",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.1",
+    "papaparse": "^5.3.1",
+    "postcss-px2rem": "^0.3.0",
+    "postcss-pxtorem": "^5.1.1",
+    "posthtml": "^0.16.5",
+    "posthtml-attrs-parser": "^0.1.1",
+    "px2rem": "^0.5.0",
+    "simplemde": "^1.11.2",
+    "sortablejs": "^1.7.0",
+    "style-vw-loader": "^1.0.2",
+    "tree-table-vue": "^1.1.0",
+    "v-org-tree": "^1.0.6",
+    "videojs-contrib-hls": "^5.15.0",
+    "vue": "^2.5.10",
+    "vue-axios": "^3.2.4",
+    "vue-calendar-component": "^2.8.2",
+    "vue-i18n": "^7.8.0",
+    "vue-iframe-print": "^1.0.1",
+    "vue-lazyload-img": "^2.1.3",
+    "vue-resource": "^1.5.3",
+    "vue-router": "^3.5.2",
+    "vue-video-player": "^5.0.2",
+    "vue2-city-selector": "^0.1.5",
+    "vuedraggable": "^2.16.0",
+    "vuex": "^3.6.2",
+    "wangeditor": "^3.1.1",
+    "xlsx": "^0.13.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.15.5",
+    "@vue/cli-plugin-babel": "^3.0.1",
+    "@vue/cli-plugin-eslint": "^3.0.1",
+    "@vue/cli-plugin-unit-mocha": "^3.0.1",
+    "@vue/cli-service": "^3.0.1",
+    "@vue/eslint-config-standard": "^3.0.0-beta.10",
+    "@vue/test-utils": "^1.0.0-beta.10",
+    "chai": "^4.1.2",
+    "crypto-js": "^4.0.0",
+    "eslint-plugin-cypress": "^2.0.1",
+    "less": "^2.7.3",
+    "less-loader": "^4.0.5",
+    "lint-staged": "^6.0.0",
+    "mockjs": "^1.0.1-beta3",
+    "vue-csv-downloader": "^1.0.3",
+    "vue-template-compiler": "^2.5.13"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ],
+  "gitHooks": {
+    "pre-commit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.js": [
+      "vue-cli-service lint",
+      "git add"
+    ],
+    "*.vue": [
+      "vue-cli-service lint",
+      "git add"
+    ]
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {},
+      "postcss-pxtorem": {
+        "rootValue": 18,
+        "propList": [
+          "*"
+        ]
+      }
+    }
+  }
+}
