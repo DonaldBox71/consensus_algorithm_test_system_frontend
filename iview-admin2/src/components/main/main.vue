@@ -42,10 +42,10 @@
           <fullscreen v-model="isFullscreen"
                       style="margin-right: 0px;" />
           <div class="center" v-show="!collapsed">
-          <H1 >PBFT Deterministic Consensus Algorithm Test System</H1>
+          <H1>PBFT Deterministic Consensus Algorithm Test System</H1>
           </div>
-           <div class="center1" v-show="collapsed">
-          <H1 >PBFT Deterministic Consensus Algorithm Test System</H1>
+          <div class="center1" v-show="collapsed">
+          <H1>PBFT Deterministic Consensus Algorithm Test System</H1>
           </div>
         </header-bar>
       </Header>

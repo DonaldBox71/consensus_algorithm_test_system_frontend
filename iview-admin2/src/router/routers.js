@@ -55,7 +55,7 @@ export default
     name: 'PBFT',
     meta: {
       // icon: 'md-funnel',
-      title: '日报表'
+      title: 'PBFT TEST'
     },
     component: () => import('@/view/tester.vue')
   },
@@ -64,9 +64,8 @@ export default
     name: 'TBFT',
     meta: {
       // icon: 'md-funnel',
-      title: '月报表'
+      title: 'TendermintBFT TEST'
     },
-    // component: () => import('@/view/report_submodule/monthly_report.vue')
   }]
 },
 ]

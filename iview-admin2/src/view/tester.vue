@@ -2,130 +2,158 @@
 <style>
 .ivu-table th.conlume-style {
   height: 60px;
-  font-size: 18px;
+  font-size: 24px;
 }
 </style>
 
 <template>
   <!-- 左栏右侧的padding值为10px,右栏左侧的padding值为20px-->
-  <div>
-    <Row>
-      <Col span="5"
-           style="padding-top:5px;padding-left:5px"
-           align="middle">
-      <Button @click="startTest()"
-              style="height: 30px width: 100px"
-              type="primary">Start Test</Button>
-      </Col>
-    </Row>
-    <!-- </Card> -->
+  <Scroll height='1000'>
+  <div style="background:#eee;padding: 10px" class='card1'>
+    <div id="starter">
+    <Card :bordered="false">
+      <p slot="title" style="height: 24px; font-size:20px"><b><i>Test Parameters Configuration</i></b></p>
+      <div id="configSets">
+        <Col>
 
-    <!--
-        下面这些可以用来设定参数：攻击方式、区块大小
-        -->
-      <p>Test Parameters Configuration</p>
-      <Row>
+        <!--下面这些可以用来设定参数：攻击方式、区块大小-->
+        <Row>
         <!-- <Col span="1">{{"Block Size："}} </Col> -->
-        <Col span="1"
-             style="padding-top:6px; height: 40px"
-             align="middle">Block Size</Col>
+          <Col span="2"
+             style="padding-top:6px; height: 40px; font-size: 16px"
+             align="left">Block Size</Col>
 
-        <Col span="3"
-             style="padding-right:10px; height: 40px">
-        <Select v-model="blockSize"
+          <Col span="3"
+             style="padding-top:6px; padding-right:20px; height: 40px">
+            <Select v-model="blockSize"
                 placeholder="Please select block size"
                 filterable
                 @on-change="chooseBlockSize()">
-          <Option v-for="item in blockSizeList"
+              <Option v-for="item in blockSizeList"
                   :value="item.value"
                   :key="item.value">{{ item.label }}</Option>
-        </Select>
-        </Col>
+            </Select>
+          </Col>
 
-        <Col span="1">{{&nbsp;}} </Col>
-        <Col span="2"
-             style="padding-top:6px; padding-left:10px; height: 40px"
-             align="middle">Delay Attack</Col>
-        <Col span="4"
-             style="height: 40px ; padding-right:10px">
-        <Select v-model="delayAttack"
+          <Col span="1">{{&nbsp;}} </Col>
+          <Col span="3"
+             style="padding-top:6px; padding-left:10px; height: 40px; font-size: 16px"
+             align="left">Delay Attack</Col>
+          <Col span="4"
+             style="padding-top:6px; height: 40px; padding-right:20px">
+            <Select v-model="delayAttack"
                 placeholder="Please choose for delay attack"
                 @on-change="chooseDelayAttack()">
-          <Option v-for="item in delayAttackChoices"
+              <Option v-for="item in delayAttackChoices"
                   :value="item.value"
                   :key="item.value">{{ item.label }}</Option>
-        </Select>
-        </Col>
-      </Row>
-      <Row>
-        <!-- <Col span="1">{{"Block Size："}} </Col> -->
-        <Col span="1"
-             style="padding-top:6px; height: 40px"
-             align="middle">Send Rate</Col>
+            </Select>
+          </Col>
 
-        <Col span="3"
-             style="padding-right:10px; height: 40px">
-        <Select v-model="sendRate"
+          <Col span="5"
+           style="padding-top:5px;padding-left:5px"
+           align="right">
+          <Button id="starter" @click="startTest()"
+              style="height: 40px; width: 120px; font-size: 20px"
+              type="primary">Start Test</Button>
+        </Col>
+        </Row>
+
+        <Row>
+        <!-- <Col span="1">{{"Block Size："}} </Col> -->
+          <Col span="2"
+             style="padding-top:6px; height: 40px; font-size: 16px"
+             align="left">Send Rate</Col>
+
+          <Col span="3"
+             style="padding-top:6px; padding-right:10px; padding-right:20px; height: 40px">
+            <Select v-model="sendRate"
                 placeholder="Please select send rate"
                 filterable
                 @on-change="chooseSendRate()">
-          <Option v-for="item in sendRateList"
+              <Option v-for="item in sendRateList"
                   :value="item.value"
                   :key="item.value">{{ item.label }}</Option>
-        </Select>
-        </Col>
+            </Select>
+          </Col>
 
-        <Col span="1">{{&nbsp;}} </Col>
-        <Col span="2"
-             style="padding-top:6px; padding-left:10px; height: 40px"
-             align="middle">Transaction Amount</Col>
-        <Col span="4"
-             style="height: 40px ; padding-right:10px">
-        <Select v-model="tAmount"
-                placeholder="Please choose for transaction amount"
+          <Col span="1">{{&nbsp;}} </Col>
+          <Col span="3"
+             style="padding-top:6px; padding-left:10px; height: 40px; font-size: 16px"
+             align="left">Transaction Amount</Col>
+          <Col span="4"
+             style="padding-top:6px; height: 40px ; padding-right:20px">
+            <Select v-model="tAmount"
+                placeholder="Please select transaction amount"
                 @on-change="chooseTAmount()">
-          <Option v-for="item in tAmountList"
+              <Option v-for="item in tAmountList"
                   :value="item.value"
                   :key="item.value">{{ item.label }}</Option>
-        </Select>
+            </Select>
+          </Col>
+        </Row>
         </Col>
-      </Row>
+      </div>
+    </Card>
+    </div>
 
+    <br>
+    
+    <div id="result" v-if="resultShow">
+      <Card>
+        <p slot="title" style="height: 24px; font-size:20px"><b><i>Test Results</i></b></p>
+        <Row>
+          <Col span="6"
+           class="word"
+           style="text-align:left; font-size:16px"> Test Start Time: {{ startTime }} </Col>
+          <Col span="6"
+           class="word"
+           style="text-align:left; font-size:16px"> Test End Time: {{ endTime }} </Col>
+           <Col></Col>
+        </Row>
 
-    <!-- 表格 -->
-    <Row span="19" style="padding-right:75px;padding-left:75px">
-        <Table 
+        <Row>
+           <Col span="6"
+           class="word"
+           style="text-align:left; font-size:16px">Transaction Amount: {{ amount }} </Col>
+           <Col span="6"
+           class="word"
+           style="text-align:left; font-size:16px"> Transaction Amount with Consensus: {{ consensusAmount }} </Col>
+        </Row>
+
+        <Row>
+          <Col span="6"
+           class="word"
+           style="text-align:left; font-size:16px"> Average Latency: {{ averageLatency }} seconds</Col>
+           <Col span="6"
+           class="word"
+           style="text-align:left; font-size:16px"> Throughput: {{ throughput }} tps</Col>
+        </Row>
+        
+        <Row>
+          <br>
+          <Col :span="24" style="padding-right:10px">
+          <Table 
              ref="myTable"
              :data="testData"
              :columns="columns_testDataIndex"
              border
              max-height="610" />
-    </Row>
-    <Row>
-      <Col span="12"
-           class="word"
-           style="text-align:center"> Test Start Time: {{ startTime }} </Col>
-           <Col span="12"
-           class="word"
-           style="text-align:center"> Test End Time: {{ endTime }} </Col>
-    </Row>
-    <Row>
-           <Col span="12"
-           class="word"
-           style="text-align:center">Transaction Amount: {{ amount }} </Col>
-           <Col span="12"
-           class="word"
-           style="text-align:center"> Transaction Amount with Consensus: {{ consensusAmount }} </Col>
-    </Row>
-    <Row>
-      <Col span="12"
-           class="word"
-           style="text-align:center"> Average Latency: {{ averageLatency }} seconds</Col>
-           <Col span="12"
-           class="word"
-           style="text-align:center"> Throughput: {{ throughput }} tps</Col>
-    </Row>
+          </Col>
+        </Row>
+
+        
+      </Card>
+    </div>
   </div>
+  </Scroll>
+  
+
+
+  <!-- 表格 -->
+  <!-- <div>
+    
+  </div> -->
 
 </template>
 
@@ -179,10 +207,10 @@ export default {
           key: 'latency',
           align: 'center',
           type: 'html',
-          width: 150,
+          width: 230,
           title: '',
           renderHeader: (h, params) => {
-            var text = 'Latency</br>(ms)'
+            var text = 'Latency (ms)'
             return h('div', {
               domProps: {
                 innerHTML: text
@@ -233,7 +261,7 @@ export default {
           key: 'executedNum',
           align: 'center',
           type: 'html',
-          width: 200,
+          width: 220,
           title: '',
           renderHeader: (h, params) => {
             var text = 'Executed<br/>Amount'
@@ -251,7 +279,7 @@ export default {
           key: 'failedNum',
           align: 'center',
           type: 'html',
-          width: 200,
+          width: 220,
           title: '',
           renderHeader: (h, params) => {
             var text = 'Failed<br/>Amount'
@@ -269,7 +297,7 @@ export default {
           key: 'finalResult',
           align: 'center',
           type: 'html',
-          width: 230,
+          width: 200,
           title: '',
           renderHeader: (h, params) => {
             var text = 'Final Result'
@@ -302,6 +330,8 @@ export default {
       delayAttackChoices: [],
       sendRateList: [],
       tAmountList: [],
+
+      resultShow: false
     }
   },
 
@@ -314,6 +344,9 @@ export default {
     this.consensusAmount = 0
     this.averageLatency = 0
     this.throughput = 0
+
+    this.resultShow = false
+    
 
     const initConfigsApi = '/initConfigs'
     
@@ -374,10 +407,15 @@ export default {
           this.consensusAmount = 0
           this.averageLatency = 0
           this.throughput = 0
+
+          this.resultShow = false
       }
       this.axios.get(api).then(res => {
           // console.log(res.data['data']['startTime'])
-          for (let i = 0; i < parseInt(res.data['data']['total']); i++) {
+          if (res.data['code'] != 200) {
+            console.log('The configuration failed! Due to ' + res.data['data'])
+          } else {
+            for (let i = 0; i < parseInt(res.data['data']['total']); i++) {
               // console.log(res.data['data']['records'][i]['startTime'])
               let obj = {
                   tID:          res.data['data']['records'][i]['tID'],
@@ -390,15 +428,17 @@ export default {
                   latency:      res.data['data']['records'][i]['latency']
               }
               this.testData.push(obj)
+            }
+            this.startTime = res.data['data']['startTime']
+            this.endTime = res.data['data']['endTime']
+            this.amount = res.data['data']['amount']
+            this.consensusAmount = res.data['data']['consensusAmount']
+            this.averageLatency = res.data['data']['averageLatency']
+            this.throughput = res.data['data']['throughput']
+
+            this.resultShow = true
           }
-          this.startTime = res.data['data']['startTime']
-          this.endTime = res.data['data']['endTime']
-          this.amount = res.data['data']['amount']
-          this.consensusAmount = res.data['data']['consensusAmount']
-          this.averageLatency = res.data['data']['averageLatency']
-          this.throughput = res.data['data']['throughput']
       })
-      
     },
 
     // 配置blockSize
