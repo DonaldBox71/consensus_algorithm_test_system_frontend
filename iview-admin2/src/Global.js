@@ -1,5 +1,5 @@
-const devBaseUrl = 'http://localhost:80'//本地Url
-const wsurl_dev = 'ws://localhost:80/ws/'//websocket
+const devBaseUrl = 'http://localhost:90'//本地Url
+const wsurl_dev = 'ws://localhost:90/ws/'//websocket
 
 const proBaseUrl = '/api'//部署url
 const wsurl_pro = 'ws://218.77.107.189:8082/ws/'
